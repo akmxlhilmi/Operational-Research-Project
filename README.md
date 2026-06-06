@@ -2,16 +2,6 @@
 ### Production Optimizer for Small Factory
 ---
 
-## Team members
-
-| Name | matric Number |
-|:------|:-----:|
-| Mia Aishah Solehah binti Mashuri | 2240199 |
-| Muhammad Akmal bin Mohd Hilmi | 2240204 |
-| Nur Umira Dini Binti Hishammudin | 2240220  |
-| Nur Farah Hanim binti Nor Azmi | 2240226 |
-
----
 
 ## Quick Start (XAMPP on Windows)
 
