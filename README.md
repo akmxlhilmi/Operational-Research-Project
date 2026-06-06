@@ -4,7 +4,7 @@
 
 ## Team members
 
-| Name | matric Number |
+| Name | Matric Number |
 |:------|:-----:|
 | Mia Aishah Solehah binti Mashuri | 2240199 |
 | Muhammad Akmal bin Mohd Hilmi | 2240204 |
