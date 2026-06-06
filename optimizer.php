@@ -77,8 +77,15 @@
                             <input type="number" id="prod-a-cost" class="wiz-input" value="15" step="any" min="0">
                         </div>
                         <div class="wiz-field">
-                            <label class="wiz-label">Time to Make (hrs)</label>
-                            <input type="number" id="prod-a-time" class="wiz-input" value="2" step="any" min="0">
+                            <label class="wiz-label">Time to Make</label>
+                            <div class="wiz-time-row">
+                                <input type="number" id="prod-a-time" class="wiz-input wiz-time-input" value="2" step="any" min="0">
+                                <select id="prod-a-time-unit" class="wiz-input wiz-time-unit">
+                                    <option value="hrs">hrs</option>
+                                    <option value="min">min</option>
+                                    <option value="sec">sec</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -99,8 +106,15 @@
                             <input type="number" id="prod-b-cost" class="wiz-input" value="45" step="any" min="0">
                         </div>
                         <div class="wiz-field">
-                            <label class="wiz-label">Time to Make (hrs)</label>
-                            <input type="number" id="prod-b-time" class="wiz-input" value="5" step="any" min="0">
+                            <label class="wiz-label">Time to Make</label>
+                            <div class="wiz-time-row">
+                                <input type="number" id="prod-b-time" class="wiz-input wiz-time-input" value="5" step="any" min="0">
+                                <select id="prod-b-time-unit" class="wiz-input wiz-time-unit">
+                                    <option value="hrs">hrs</option>
+                                    <option value="min">min</option>
+                                    <option value="sec">sec</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>

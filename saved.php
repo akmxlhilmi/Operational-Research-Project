@@ -70,8 +70,8 @@
                 grid.innerHTML = problems.map(function(p){
                     var cCount = (p.constraints || []).length;
                     var rCount = parseInt(p.result_count || 0);
-                    var aSale = parseFloat(p.prod_a_sale || 0), aCost = parseFloat(p.prod_a_cost || 0), aTime = parseFloat(p.prod_a_time || 0);
-                    var bSale = parseFloat(p.prod_b_sale || 0), bCost = parseFloat(p.prod_b_cost || 0), bTime = parseFloat(p.prod_b_time || 0);
+                    var aSale = parseFloat(p.prod_a_sale || 0), aCost = parseFloat(p.prod_a_cost || 0), aTime = parseFloat(p.prod_a_time || 0), aUnit = p.prod_a_time_unit || 'hrs';
+                    var bSale = parseFloat(p.prod_b_sale || 0), bCost = parseFloat(p.prod_b_cost || 0), bTime = parseFloat(p.prod_b_time || 0), bUnit = p.prod_b_time_unit || 'hrs';
                     var budget = parseFloat(p.budget || 0), hours = parseFloat(p.work_hours || 0);
                     var period = p.budget_period || 'week';
                     return '<div class="saved-card">' +
@@ -80,8 +80,8 @@
                         '<span class="saved-date">' + new Date(p.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) + '</span>' +
                         '</div>' +
                         '<div class="saved-card-details">' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_a_name || 'Product 1') + '</span><span class="saved-detail-value">Sale $' + aSale.toFixed(2) + ' &middot; Cost $' + aCost.toFixed(2) + ' &middot; ' + aTime + ' hrs</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_b_name || 'Product 2') + '</span><span class="saved-detail-value">Sale $' + bSale.toFixed(2) + ' &middot; Cost $' + bCost.toFixed(2) + ' &middot; ' + bTime + ' hrs</span></div>' +
+                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_a_name || 'Product 1') + '</span><span class="saved-detail-value">Sale $' + aSale.toFixed(2) + ' &middot; Cost $' + aCost.toFixed(2) + ' &middot; ' + aTime + ' ' + aUnit + '</span></div>' +
+                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_b_name || 'Product 2') + '</span><span class="saved-detail-value">Sale $' + bSale.toFixed(2) + ' &middot; Cost $' + bCost.toFixed(2) + ' &middot; ' + bTime + ' ' + bUnit + '</span></div>' +
                         '<div class="saved-detail"><span class="saved-detail-label">Budget</span><span class="saved-detail-value">$' + budget.toFixed(2) + ' &middot; ' + hours + ' hrs per ' + period + '</span></div>' +
                         '<div class="saved-detail"><span class="saved-detail-label">Results saved</span><span class="saved-detail-value">' + rCount + '</span></div>' +
                         '</div>' +

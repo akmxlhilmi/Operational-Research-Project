@@ -5,9 +5,16 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'optimizer_db');
 
-function getDB(): mysqli {
+// Convert all PHP errors to exceptions so they're caught by try/catch
+set_error_handler(function($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) return false;
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
+
+function getDB() {
     static $conn = null;
     if ($conn === null) {
+        mysqli_report(MYSQLI_REPORT_OFF);
         $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         if ($conn->connect_error) {
             http_response_code(500);

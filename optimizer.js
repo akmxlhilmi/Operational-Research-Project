@@ -13,8 +13,8 @@ var state = {
     budget: 315,
     budgetPeriod: 'week',
     workHours: 40,
-    productA: { name: 'Table (X)', sale: 90, cost: 15, time: 2 },
-    productB: { name: 'Chair (Y)', sale: 180, cost: 45, time: 5 },
+    productA: { name: 'Table (X)', sale: 90, cost: 15, time: 2, timeUnit: 'hrs' },
+    productB: { name: 'Chair (Y)', sale: 180, cost: 45, time: 5, timeUnit: 'hrs' },
     constraints: [],
     savedProblems: [],
     lastResult: null
@@ -47,10 +47,20 @@ function deriveConstraints() {
 
     state.productA.sale = parseFloat(document.getElementById('prod-a-sale').value) || 0;
     state.productA.cost = parseFloat(document.getElementById('prod-a-cost').value) || 0;
-    state.productA.time = parseFloat(document.getElementById('prod-a-time').value) || 0;
     state.productB.sale = parseFloat(document.getElementById('prod-b-sale').value) || 0;
     state.productB.cost = parseFloat(document.getElementById('prod-b-cost').value) || 0;
+    state.productA.time = parseFloat(document.getElementById('prod-a-time').value) || 0;
+    state.productA.timeUnit = document.getElementById('prod-a-time-unit').value;
     state.productB.time = parseFloat(document.getElementById('prod-b-time').value) || 0;
+    state.productB.timeUnit = document.getElementById('prod-b-time-unit').value;
+
+    var timeAHrs = state.productA.time;
+    if (state.productA.timeUnit === 'min') timeAHrs /= 60;
+    if (state.productA.timeUnit === 'sec') timeAHrs /= 3600;
+
+    var timeBHrs = state.productB.time;
+    if (state.productB.timeUnit === 'min') timeBHrs /= 60;
+    if (state.productB.timeUnit === 'sec') timeBHrs /= 3600;
 
     state.constraints = [
         {
@@ -62,8 +72,8 @@ function deriveConstraints() {
         },
         {
             name: 'Work Hours (' + state.budgetPeriod + ')',
-            coefA: state.productA.time,
-            coefB: state.productB.time,
+            coefA: timeAHrs,
+            coefB: timeBHrs,
             max: state.workHours,
             unit: 'hrs'
         }
@@ -105,10 +115,12 @@ function saveProblem() {
         prod_a_sale: state.productA.sale,
         prod_a_cost: state.productA.cost,
         prod_a_time: state.productA.time,
+        prod_a_time_unit: state.productA.timeUnit,
         prod_b_name: state.productB.name,
         prod_b_sale: state.productB.sale,
         prod_b_cost: state.productB.cost,
         prod_b_time: state.productB.time,
+        prod_b_time_unit: state.productB.timeUnit,
         budget: state.budget,
         budget_period: state.budgetPeriod,
         work_hours: state.workHours,
@@ -122,7 +134,12 @@ function saveProblem() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(r){
+        return r.json().then(function(data){
+            if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+            return data;
+        });
+    })
     .then(function(r){
         if (r.success) {
             var wasNew = !state.currentProblemId;
@@ -130,7 +147,9 @@ function saveProblem() {
             toast(wasNew ? 'Problem saved' : 'Problem updated');
             window.history.replaceState({}, '', 'optimizer.php?load=' + r.id);
             loadProblems();
-        } else throw new Error(r.error || 'Unknown');
+        } else {
+            throw new Error(r.error || 'Unknown error');
+        }
     })
     .catch(function(e){ toast('Save failed: ' + e.message, 'error'); });
 }
@@ -147,13 +166,15 @@ function loadProblem(problem) {
         name: problem.prod_a_name || 'Product A',
         sale: parseFloat(problem.prod_a_sale) || 0,
         cost: parseFloat(problem.prod_a_cost) || 0,
-        time: parseFloat(problem.prod_a_time) || 0
+        time: parseFloat(problem.prod_a_time) || 0,
+        timeUnit: problem.prod_a_time_unit || 'hrs'
     };
     state.productB = {
         name: problem.prod_b_name || 'Product B',
         sale: parseFloat(problem.prod_b_sale) || 0,
         cost: parseFloat(problem.prod_b_cost) || 0,
-        time: parseFloat(problem.prod_b_time) || 0
+        time: parseFloat(problem.prod_b_time) || 0,
+        timeUnit: problem.prod_b_time_unit || 'hrs'
     };
 
     document.getElementById('wiz-name').value = state.problemName;
@@ -165,11 +186,13 @@ function loadProblem(problem) {
     document.getElementById('prod-a-sale').value = state.productA.sale;
     document.getElementById('prod-a-cost').value = state.productA.cost;
     document.getElementById('prod-a-time').value = state.productA.time;
+    document.getElementById('prod-a-time-unit').value = state.productA.timeUnit;
 
     document.getElementById('prod-b-name').value = state.productB.name;
     document.getElementById('prod-b-sale').value = state.productB.sale;
     document.getElementById('prod-b-cost').value = state.productB.cost;
     document.getElementById('prod-b-time').value = state.productB.time;
+    document.getElementById('prod-b-time-unit').value = state.productB.timeUnit;
 
     deriveConstraints();
     solveAndRender();
@@ -181,6 +204,9 @@ function newProblem() {
     state.budget = 0;
     state.budgetPeriod = 'week';
     state.workHours = 0;
+    state.productA = { name: 'Product A', sale: 0, cost: 0, time: 0, timeUnit: 'hrs' };
+    state.productB = { name: 'Product B', sale: 0, cost: 0, time: 0, timeUnit: 'hrs' };
+    state.lastResult = null;
 
     document.getElementById('wiz-name').value = 'Untitled Problem';
     document.getElementById('wiz-budget').value = 0;
@@ -191,11 +217,13 @@ function newProblem() {
     document.getElementById('prod-a-sale').value = 0;
     document.getElementById('prod-a-cost').value = 0;
     document.getElementById('prod-a-time').value = 0;
+    document.getElementById('prod-a-time-unit').value = 'hrs';
 
     document.getElementById('prod-b-name').value = 'Product B';
     document.getElementById('prod-b-sale').value = 0;
     document.getElementById('prod-b-cost').value = 0;
     document.getElementById('prod-b-time').value = 0;
+    document.getElementById('prod-b-time-unit').value = 'hrs';
 
     deriveConstraints();
     document.getElementById('results-area').style.display = 'none';

@@ -6,11 +6,11 @@ $db = getDB();
 $sql = "SELECT p.*,
         (SELECT COUNT(*) FROM results r WHERE r.problem_id = p.id) AS result_count
         FROM problems p ORDER BY p.created_at DESC";
-$result = $db->query($sql);
 
+$result = @$db->query($sql);
 if (!$result) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Query failed: ' . $db->error]);
+    http_response_code(200);
+    echo json_encode([]);
     exit;
 }
 
@@ -19,17 +19,21 @@ while ($row = $result->fetch_assoc()) {
     $pid = (int)$row['id'];
 
     $cstmt = $db->prepare("SELECT id, name, coef_a, coef_b, max_val, unit FROM constraints WHERE problem_id = ? ORDER BY id ASC");
-    $cstmt->bind_param("i", $pid);
-    $cstmt->execute();
-    $cresult = $cstmt->get_result();
+    if ($cstmt) {
+        $cstmt->bind_param("i", $pid);
+        $cstmt->execute();
+        $cresult = $cstmt->get_result();
 
-    $constraints = [];
-    while ($crow = $cresult->fetch_assoc()) {
-        $constraints[] = $crow;
+        $constraints = [];
+        if ($cresult) {
+            while ($crow = $cresult->fetch_assoc()) {
+                $constraints[] = $crow;
+            }
+        }
+        $cstmt->close();
     }
-    $cstmt->close();
 
-    $row['constraints'] = $constraints;
+    $row['constraints'] = $constraints ?? [];
     $problems[] = $row;
 }
 

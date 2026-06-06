@@ -1,3 +1,7 @@
+/* ============================================================
+   OR Production Optimizer — style.css
+   Dark Industrial Precision · Single stylesheet
+   ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
@@ -456,6 +460,14 @@ select.wiz-input { cursor: pointer; }
     border-radius: 0; background: transparent; padding: 4px 0; margin-bottom: 12px;
 }
 .wiz-prod-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+/* Time input with unit selector */
+.wiz-time-row { display: flex; gap: 4px; }
+.wiz-time-input { flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.wiz-time-unit {
+    width: 70px; flex-shrink: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;
+    border-left: none; font-family: var(--font-mono); font-size: 0.78rem; padding: 8px 6px;
+}
 
 /* Actions */
 .wiz-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

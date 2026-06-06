@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
-$id = isset($data['id']) ? (int)$data['id'] : null;
+$id = (!empty($data['id'])) ? (int)$data['id'] : null;
 
 if (!$id) {
     http_response_code(400);
@@ -19,6 +19,11 @@ if (!$id) {
 $db = getDB();
 
 $stmt = $db->prepare("DELETE FROM problems WHERE id = ?");
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error']);
+    exit;
+}
 $stmt->bind_param("i", $id);
 
 if ($stmt->execute()) {
