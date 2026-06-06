@@ -13,6 +13,7 @@ var state = {
     budget: 315,
     budgetPeriod: 'week',
     workHours: 40,
+    workHoursUnit: 'hrs',
     productA: { name: 'Table (X)', sale: 90, cost: 15, time: 2, timeUnit: 'hrs' },
     productB: { name: 'Chair (Y)', sale: 180, cost: 45, time: 5, timeUnit: 'hrs' },
     constraints: [],
@@ -43,7 +44,12 @@ function toast(msg, type) {
 function deriveConstraints() {
     state.budget = parseFloat(document.getElementById('wiz-budget').value) || 0;
     state.workHours = parseFloat(document.getElementById('wiz-hours').value) || 0;
+    state.workHoursUnit = document.getElementById('wiz-hours-unit').value;
     state.budgetPeriod = document.getElementById('wiz-period').value;
+
+    var workHrs = state.workHours;
+    if (state.workHoursUnit === 'min') workHrs /= 60;
+    if (state.workHoursUnit === 'sec') workHrs /= 3600;
 
     state.productA.sale = parseFloat(document.getElementById('prod-a-sale').value) || 0;
     state.productA.cost = parseFloat(document.getElementById('prod-a-cost').value) || 0;
@@ -74,7 +80,7 @@ function deriveConstraints() {
             name: 'Work Hours (' + state.budgetPeriod + ')',
             coefA: timeAHrs,
             coefB: timeBHrs,
-            max: state.workHours,
+            max: workHrs,
             unit: 'hrs'
         }
     ];
@@ -124,6 +130,7 @@ function saveProblem() {
         budget: state.budget,
         budget_period: state.budgetPeriod,
         work_hours: state.workHours,
+        work_hours_unit: state.workHoursUnit,
         constraints: state.constraints.map(function(c){
             return { name: c.name, coef_a: c.coefA, coef_b: c.coefB, max_val: c.max, unit: c.unit };
         })
@@ -161,6 +168,7 @@ function loadProblem(problem) {
     state.budget = parseFloat(problem.budget) || 0;
     state.budgetPeriod = problem.budget_period || 'week';
     state.workHours = parseFloat(problem.work_hours) || 0;
+    state.workHoursUnit = problem.work_hours_unit || 'hrs';
 
     state.productA = {
         name: problem.prod_a_name || 'Product A',
@@ -181,6 +189,7 @@ function loadProblem(problem) {
     document.getElementById('wiz-budget').value = state.budget;
     document.getElementById('wiz-period').value = state.budgetPeriod;
     document.getElementById('wiz-hours').value = state.workHours;
+    document.getElementById('wiz-hours-unit').value = state.workHoursUnit;
 
     document.getElementById('prod-a-name').value = state.productA.name;
     document.getElementById('prod-a-sale').value = state.productA.sale;
@@ -204,6 +213,7 @@ function newProblem() {
     state.budget = 0;
     state.budgetPeriod = 'week';
     state.workHours = 0;
+    state.workHoursUnit = 'hrs';
     state.productA = { name: 'Product A', sale: 0, cost: 0, time: 0, timeUnit: 'hrs' };
     state.productB = { name: 'Product B', sale: 0, cost: 0, time: 0, timeUnit: 'hrs' };
     state.lastResult = null;
@@ -212,6 +222,7 @@ function newProblem() {
     document.getElementById('wiz-budget').value = 0;
     document.getElementById('wiz-period').value = 'week';
     document.getElementById('wiz-hours').value = 0;
+    document.getElementById('wiz-hours-unit').value = 'hrs';
 
     document.getElementById('prod-a-name').value = 'Product A';
     document.getElementById('prod-a-sale').value = 0;
