@@ -31,20 +31,6 @@ http://localhost/Your-project-name/Operational-Research-Project/setup.php
 ```
 2. Paste the URL inside your browser.
 
-**Option B: phpMyAdmin**
-1. Copy code from `api/setup.sql`
-2. Open `http://localhost/phpmyadmin`
-3. Find `SQL` inside `phpMyadmin`
-4. Paste the code 
-5. Click **Go**
-
-**Option C: phpMyAdmin**
-1. Open `http://localhost/phpmyadmin`
-2. Click **Import** tab
-3. Select `api/setup.sql` from the project folder
-4. Click **Go**
-
-> The script runs `DROP DATABASE IF EXISTS optimizer_db`, so it's safe to re-run anytime.
 
 ### 4. Configure Database Credentials (if needed)
 
