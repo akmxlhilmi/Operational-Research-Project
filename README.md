@@ -1,6 +1,13 @@
-# OR Production Optimizer
+# Operational Research
+### Production Optimizer for Small Factory
+---
 
-A linear programming tool for production planning. Define products, set resource constraints, and instantly calculate the optimal production mix to maximize profit. Built with PHP, MySQL, and vanilla JavaScript.
+## Team members
+
+| Name | Age | City |
+|------|-----|------|
+| Alice | 25 | London |
+| Bob | 30 | Paris |
 
 ---
 
