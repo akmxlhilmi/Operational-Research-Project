@@ -2,18 +2,6 @@
 
 A linear programming tool for production planning. Define products, set resource constraints, and instantly calculate the optimal production mix to maximize profit. Built with PHP, MySQL, and vanilla JavaScript.
 
-## Features
-
-- **Guided optimization wizard** — Enter budget, hours, and product details to auto-derive the LP model
-- **Auto-generated constraints** — Budget and time constraints derived from your inputs
-- **Two-product LP solver** — Vertex enumeration finds the optimal solution instantly
-- **Corner point comparison table** — All feasible vertices evaluated side-by-side
-- **Interactive feasible region graph** — SVG visualization with constraint lines and hover tooltips
-- **Mathematical formulation display** — Objective function and constraints shown in equation form
-- **Persistent storage** — Save/load problems and results to MySQL
-- **Example presets** — Furniture Workshop, Bakery, Electronics pre-loaded
-
----
 
 ## Quick Start (XAMPP on Windows)
 
@@ -41,16 +29,16 @@ Open **XAMPP Control Panel** and start:
 ```bash 
 http://localhost/Your-project-name/Operational-Research-Project/setup.php 
 ```
-2. Paste the URL
+2. Paste the URL inside your browser.
 
-**Option A: phpMyAdmin**
+**Option B: phpMyAdmin**
 1. Copy code from `api/setup.sql`
 2. Open `http://localhost/phpmyadmin`
 3. Find `SQL` inside `phpMyadmin`
 4. Paste the code 
 5. Click **Go**
 
-**Option B: phpMyAdmin**
+**Option C: phpMyAdmin**
 1. Open `http://localhost/phpmyadmin`
 2. Click **Import** tab
 3. Select `api/setup.sql` from the project folder
