@@ -4,10 +4,12 @@
 
 ## Team members
 
-| Name | Age | City |
-|------|-----|------|
-| Alice | 25 | London |
-| Bob | 30 | Paris |
+| Name | matric Number
+|------|-----|
+| Mia Aishah Solehah binti Mashuri | 2240199 |
+| Muhammad Akmal bin Mohd Hilmi | 2240204 |
+| Nur Umira Dini Binti Hishammudin | 2240220  |
+| Nur Farah Hanim binti Nor Azmi | 2240226 |
 
 ---
 
