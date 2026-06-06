@@ -22,7 +22,7 @@ A linear programming tool for production planning. Define products, set resource
 open CMD inside your htdocs file
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/or-project.git
+git clone https://github.com/akmxlhilmi/or-project.git
 cd or-project
 ```
 
@@ -35,6 +35,10 @@ Open **XAMPP Control Panel** and start:
 - **MySQL**
 
 ### 3. Set Up the Database
+
+**Option A: use setup.php**
+1. Copy `http://localhost/Your-project-name/Operational-Research-Project/setup.php`
+2. Paste the URL
 
 **Option A: phpMyAdmin**
 1. Copy code from `api/setup.sql`
