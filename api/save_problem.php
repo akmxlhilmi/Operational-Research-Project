@@ -1,124 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saved Problems — OR Optimizer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="noise-overlay"></div>
+<?php
+require_once 'db.php';
 
-    <header class="site-header">
-        <nav class="navbar">
-            <a class="brand" href="index.php">
-                <span class="brand-mark">OR</span>
-                <span class="brand-name">Production Optimizer</span>
-            </a>
-            <ul class="nav-links">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="optimizer.php">Optimizer</a></li>
-            </ul>
-        </nav>
-    </header>
+try {
 
-    <main class="saved-page">
-        <h1 class="saved-title">Saved Problems</h1>
-        <div id="saved-grid" class="saved-grid">
-            <div class="empty-state">Loading...</div>
-        </div>
-    </main>
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'POST method required']);
+    exit;
+}
 
-    <div id="toast-container" class="toast-container"></div>
+$raw = file_get_contents('php://input');
+$data = json_decode($raw, true);
+if (!$data) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON input']);
+    exit;
+}
 
-    <script>
-    var API_BASE = 'api';
+$db = getDB();
 
-    function esc(str) {
-        var d = document.createElement('div');
-        d.textContent = str || '';
-        return d.innerHTML;
+$id            = (!empty($data['id'])) ? (int)$data['id'] : null;
+$name          = trim($data['name'] ?? 'Untitled Problem');
+$prodAName     = trim($data['prod_a_name'] ?? 'Product A');
+$prodASale     = (float)($data['prod_a_sale'] ?? 0);
+$prodACost     = (float)($data['prod_a_cost'] ?? 0);
+$prodATime     = (float)($data['prod_a_time'] ?? 0);
+$prodATimeUnit = trim($data['prod_a_time_unit'] ?? 'hrs');
+$prodBName     = trim($data['prod_b_name'] ?? 'Product B');
+$prodBSale     = (float)($data['prod_b_sale'] ?? 0);
+$prodBCost     = (float)($data['prod_b_cost'] ?? 0);
+$prodBTime     = (float)($data['prod_b_time'] ?? 0);
+$prodBTimeUnit = trim($data['prod_b_time_unit'] ?? 'hrs');
+$budget        = (float)($data['budget'] ?? 0);
+$budgetPeriod  = trim($data['budget_period'] ?? 'week');
+$workHours     = (float)($data['work_hours'] ?? 0);
+$workHoursUnit = trim($data['work_hours_unit'] ?? 'hrs');
+$constraints   = $data['constraints'] ?? [];
+
+if ($name === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Problem name is required']);
+    exit;
+}
+
+$db->begin_transaction();
+
+if ($id) {
+    $stmt = $db->prepare(
+            "UPDATE problems SET name=?, prod_a_name=?, prod_a_sale=?, prod_a_cost=?, prod_a_time=?, prod_a_time_unit=?,
+             prod_b_name=?, prod_b_sale=?, prod_b_cost=?, prod_b_time=?, prod_b_time_unit=?,
+             budget=?, budget_period=?, work_hours=?, work_hours_unit=? WHERE id=?"
+    );
+    if (!$stmt) throw new Exception('Prepare UPDATE: ' . $db->error);
+
+    $stmt->bind_param(
+        "ssdddssdddsdsdsi",
+        $name, $prodAName, $prodASale, $prodACost, $prodATime, $prodATimeUnit,
+        $prodBName, $prodBSale, $prodBCost, $prodBTime, $prodBTimeUnit,
+        $budget, $budgetPeriod, $workHours, $workHoursUnit, $id
+    );
+    $stmt->execute();
+    $stmt->close();
+
+    $delStmt = $db->prepare("DELETE FROM constraints WHERE problem_id = ?");
+    if (!$delStmt) throw new Exception('Prepare DELETE constraints: ' . $db->error);
+    $delStmt->bind_param("i", $id);
+    $delStmt->execute();
+    $delStmt->close();
+} else {
+    $stmt = $db->prepare(
+            "INSERT INTO problems (name, prod_a_name, prod_a_sale, prod_a_cost, prod_a_time, prod_a_time_unit,
+             prod_b_name, prod_b_sale, prod_b_cost, prod_b_time, prod_b_time_unit,
+             budget, budget_period, work_hours, work_hours_unit)
+             VALUES (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?,  ?, ?, ?, ?)"
+    );
+    if (!$stmt) throw new Exception('Prepare INSERT: ' . $db->error);
+
+    $stmt->bind_param(
+        "ssdddssdddsdsds",
+        $name, $prodAName, $prodASale, $prodACost, $prodATime, $prodATimeUnit,
+        $prodBName, $prodBSale, $prodBCost, $prodBTime, $prodBTimeUnit,
+        $budget, $budgetPeriod, $workHours, $workHoursUnit
+    );
+    $stmt->execute();
+    $id = $db->insert_id;
+    $stmt->close();
+}
+
+if (count($constraints) > 0) {
+    $cstmt = $db->prepare("INSERT INTO constraints (problem_id, name, coef_a, coef_b, max_val, unit) VALUES (?, ?, ?, ?, ?, ?)");
+    if (!$cstmt) throw new Exception('Prepare INSERT constraints: ' . $db->error);
+
+    foreach ($constraints as $c) {
+        $cName  = trim($c['name'] ?? 'Constraint');
+        $coefA  = (float)($c['coef_a'] ?? 0);
+        $coefB  = (float)($c['coef_b'] ?? 0);
+        $maxVal = (float)($c['max_val'] ?? 0);
+        $unit   = trim($c['unit'] ?? 'units');
+        $cstmt->bind_param("isddds", $id, $cName, $coefA, $coefB, $maxVal, $unit);
+        $cstmt->execute();
     }
+    $cstmt->close();
+}
 
-    function toast(msg, type) {
-        type = type || 'success';
-        var c = document.getElementById('toast-container');
-        if (!c) return;
-        var t = document.createElement('div');
-        t.className = 'toast toast-' + type;
-        t.textContent = msg;
-        c.appendChild(t);
-        requestAnimationFrame(function(){ t.classList.add('show'); });
-        setTimeout(function(){
-            t.classList.remove('show');
-            setTimeout(function(){ t.remove(); }, 300);
-        }, 3000);
+$db->commit();
+echo json_encode(['success' => true, 'id' => $id]);
+
+} catch (Throwable $e) {
+    if (isset($db) && $db instanceof mysqli) {
+        try { $db->rollback(); } catch (Throwable $_) {}
     }
-
-    function load() {
-        fetch(API_BASE + '/get_problems.php')
-            .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-            .then(function(problems){
-                var grid = document.getElementById('saved-grid');
-                if (!problems.length) {
-                    grid.innerHTML = '<div class="empty-state">No saved problems yet. <a href="index.php">Create one now</a>.</div>';
-                    return;
-                }
-                grid.innerHTML = problems.map(function(p){
-                    var cCount = (p.constraints || []).length;
-                    var rCount = parseInt(p.result_count || 0);
-                    var aSale = parseFloat(p.prod_a_sale || 0), aCost = parseFloat(p.prod_a_cost || 0), aTime = parseFloat(p.prod_a_time || 0), aUnit = p.prod_a_time_unit || 'hrs';
-                    var bSale = parseFloat(p.prod_b_sale || 0), bCost = parseFloat(p.prod_b_cost || 0), bTime = parseFloat(p.prod_b_time || 0), bUnit = p.prod_b_time_unit || 'hrs';
-                    var budget = parseFloat(p.budget || 0), hours = parseFloat(p.work_hours || 0);
-                    var period = p.budget_period || 'week';
-                    return '<div class="saved-card">' +
-                        '<div class="saved-card-header">' +
-                        '<h2>' + esc(p.name) + '</h2>' +
-                        '<span class="saved-date">' + new Date(p.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) + '</span>' +
-                        '</div>' +
-                        '<div class="saved-card-details">' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_a_name || 'Product 1') + '</span><span class="saved-detail-value">Sale $' + aSale.toFixed(2) + ' &middot; Cost $' + aCost.toFixed(2) + ' &middot; ' + aTime + ' ' + aUnit + '</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_b_name || 'Product 2') + '</span><span class="saved-detail-value">Sale $' + bSale.toFixed(2) + ' &middot; Cost $' + bCost.toFixed(2) + ' &middot; ' + bTime + ' ' + bUnit + '</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">Budget</span><span class="saved-detail-value">$' + budget.toFixed(2) + ' &middot; ' + hours + ' hrs per ' + period + '</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">Results saved</span><span class="saved-detail-value">' + rCount + '</span></div>' +
-                        '</div>' +
-                        '<div class="saved-card-actions">' +
-                        '<a class="btn btn-primary" href="optimizer.php?load=' + p.id + '">Load into Optimizer</a>' +
-                        '<button class="btn btn-delete" data-id="' + p.id + '">Delete</button>' +
-                        '</div>' +
-                        '</div>';
-                    }).join('');
-
-                    grid.querySelectorAll('.btn-delete').forEach(function(btn){
-                        btn.addEventListener('click', function(){
-                            del(parseInt(this.dataset.id));
-                        });
-                    });
-            })
-            .catch(function(e){
-                document.getElementById('saved-grid').innerHTML = '<div class="empty-state">Failed to load problems. Check your database connection.</div>';
-            });
-    }
-
-    function del(id) {
-        if (!confirm('Delete this problem and all its saved results?')) return;
-        fetch(API_BASE + '/delete_problem.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id })
-        })
-        .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(r){
-            if (r.success) { toast('Problem deleted'); load(); }
-            else alert(r.error);
-        })
-        .catch(function(e){ alert('Failed to delete: ' + e.message); });
-    }
-
-    load();
-    </script>
-</body>
-</html>
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+}
