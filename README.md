@@ -15,7 +15,6 @@ git clone https://github.com/akmxlhilmi/Operational-Research-Project.git
 cd Operational-Research-Project
 ```
 
-> **Note:** Replace `YOUR-USERNAME` with your actual GitHub username. The project must live inside your web server's document root (e.g., `htdocs` for XAMPP).
 
 ### 2. Start XAMPP Services
 
