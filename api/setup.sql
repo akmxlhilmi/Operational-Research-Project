@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS problems (
   budget        DECIMAL(10,2)  NOT NULL DEFAULT 0,
   budget_period VARCHAR(10)    NOT NULL DEFAULT 'week',
   work_hours    DECIMAL(10,2)  NOT NULL DEFAULT 0,
+  work_hours_unit VARCHAR(10) NOT NULL DEFAULT 'hrs',
   created_at    TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -52,10 +53,10 @@ CREATE TABLE IF NOT EXISTS results (
 
 INSERT INTO problems (name, prod_a_name, prod_a_sale, prod_a_cost, prod_a_time, prod_a_time_unit,
                              prod_b_name, prod_b_sale, prod_b_cost, prod_b_time, prod_b_time_unit,
-                             budget, budget_period, work_hours) VALUES
-  ('Furniture Workshop (Example)', 'Wooden Table', 90, 15, 2, 'hrs', 'Wooden Chair', 180, 45, 5, 'hrs', 315, 'week', 40),
-  ('Bakery (Example)',             'Cake',        160, 30, 3, 'hrs', 'Bread',      60, 10, 1, 'hrs', 240, 'week', 48),
-  ('Electronics (Example)',        'Smart Speaker', 85, 25, 1.5,'hrs', 'Headphones', 130, 40, 2, 'hrs', 400, 'week', 50);
+                             budget, budget_period, work_hours, work_hours_unit) VALUES
+  ('Furniture Workshop (Example)', 'Wooden Table', 90, 15, 2, 'hrs', 'Wooden Chair', 180, 45, 5, 'hrs', 315, 'week', 40, 'hrs'),
+  ('Bakery (Example)',             'Cake',        160, 30, 3, 'hrs', 'Bread',      60, 10, 1, 'hrs', 240, 'week', 48, 'hrs'),
+  ('Electronics (Example)',        'Smart Speaker', 85, 25, 1.5,'hrs', 'Headphones', 130, 40, 2, 'hrs', 400, 'week', 50, 'hrs');
 
 INSERT INTO constraints (problem_id, name, coef_a, coef_b, max_val, unit) VALUES
   (1, 'Budget Constraint',  15, 45, 315, '$'),
