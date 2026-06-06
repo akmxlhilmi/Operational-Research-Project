@@ -52,7 +52,14 @@
                 </div>
                 <div class="wiz-field">
                     <label class="wiz-label">Available Work Hours</label>
-                    <input type="number" id="wiz-hours" class="wiz-input" value="40" step="any" min="0">
+                    <div class="wiz-time-row">
+                        <input type="number" id="wiz-hours" class="wiz-input wiz-time-input" value="40" step="any" min="0">
+                        <select id="wiz-hours-unit" class="wiz-input wiz-time-unit">
+                            <option value="hrs">hrs</option>
+                            <option value="min">min</option>
+                            <option value="sec">sec</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </section>
