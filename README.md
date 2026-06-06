@@ -37,7 +37,10 @@ Open **XAMPP Control Panel** and start:
 ### 3. Set Up the Database
 
 **Option A: use setup.php**
-1. Copy `http://localhost/Your-project-name/Operational-Research-Project/setup.php`
+1. Copy 
+```bash 
+http://localhost/Your-project-name/Operational-Research-Project/setup.php 
+```
 2. Paste the URL
 
 **Option A: phpMyAdmin**
