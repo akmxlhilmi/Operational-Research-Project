@@ -1,5 +1,8 @@
 <?php
 require_once 'db.php';
+requireAuth();
+
+$userId = getCurrentUserId();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -18,13 +21,13 @@ if (!$id) {
 
 $db = getDB();
 
-$stmt = $db->prepare("DELETE FROM problems WHERE id = ?");
+$stmt = $db->prepare("DELETE FROM problems WHERE id = ? AND user_id = ?");
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error']);
     exit;
 }
-$stmt->bind_param("i", $id);
+$stmt->bind_param("ii", $id, $userId);
 
 if ($stmt->execute()) {
     if ($stmt->affected_rows > 0) {

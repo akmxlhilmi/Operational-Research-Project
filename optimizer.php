@@ -1,3 +1,13 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+$username = $_SESSION['username'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,6 +31,8 @@
             <ul class="nav-links">
                 <li><a href="index.php">Home</a></li>
                 <li><a href="saved.php">Saved Problems</a></li>
+                <li><span class="nav-user"><?php echo htmlspecialchars($username); ?></span></li>
+                <li><a href="api/logout.php" class="nav-logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -39,7 +51,14 @@
             </div>
             <div class="wiz-row wiz-row-3">
                 <div class="wiz-field">
-                    <label class="wiz-label">Manufacturing Budget (RM)</label>
+                    <label class="wiz-label">Constraint Type</label>
+                    <select id="wiz-constraint-type" class="wiz-input">
+                        <option value="budget">Budget (Cost Limit)</option>
+                        <option value="revenue">Target Revenue</option>
+                    </select>
+                </div>
+                <div class="wiz-field">
+                    <label class="wiz-label">Amount (RM)</label>
                     <input type="number" id="wiz-budget" class="wiz-input" value="315" step="any" min="0">
                 </div>
                 <div class="wiz-field">
@@ -50,6 +69,8 @@
                         <option value="year">Per Year</option>
                     </select>
                 </div>
+            </div>
+            <div class="wiz-row wiz-row-2">
                 <div class="wiz-field">
                     <label class="wiz-label">Available Work Hours</label>
                     <div class="wiz-time-row">
@@ -161,7 +182,7 @@
                             <tr>
                                 <th>Corner Point (X, Y)</th>
                                 <th>Feasible?</th>
-                                <th>S = sale&times;X + sale&times;Y</th>
+                                <th id="corner-value-header">Objective Value</th>
                                 <th>Analysis</th>
                             </tr>
                         </thead>

@@ -11,6 +11,7 @@ var state = {
     currentProblemId: null,
     problemName: 'Untitled Problem',
     budget: 315,
+    constraintType: 'budget',
     budgetPeriod: 'week',
     workHours: 40,
     workHoursUnit: 'hrs',
@@ -68,20 +69,29 @@ function deriveConstraints() {
     if (state.productB.timeUnit === 'min') timeBHrs /= 60;
     if (state.productB.timeUnit === 'sec') timeBHrs /= 3600;
 
+    state.constraintType = document.getElementById('wiz-constraint-type').value;
+
+    var isRevenue = state.constraintType === 'revenue';
+    var cName = isRevenue ? 'Target Revenue (' + state.budgetPeriod + ')' : 'Budget (' + state.budgetPeriod + ')';
+    var coefA = isRevenue ? state.productA.sale : state.productA.cost;
+    var coefB = isRevenue ? state.productB.sale : state.productB.cost;
+
     state.constraints = [
         {
-            name: 'Budget (' + state.budgetPeriod + ')',
-            coefA: state.productA.cost,
-            coefB: state.productB.cost,
+            name: cName,
+            coefA: coefA,
+            coefB: coefB,
             max: state.budget,
-            unit: 'RM'
+            unit: 'RM',
+            direction: isRevenue ? '>=' : '<='
         },
         {
             name: 'Work Hours (' + state.budgetPeriod + ')',
             coefA: timeAHrs,
             coefB: timeBHrs,
             max: workHrs,
-            unit: 'hrs'
+            unit: 'hrs',
+            direction: '<='
         }
     ];
 }
@@ -128,11 +138,12 @@ function saveProblem() {
         prod_b_time: state.productB.time,
         prod_b_time_unit: state.productB.timeUnit,
         budget: state.budget,
+        constraint_type: state.constraintType,
         budget_period: state.budgetPeriod,
         work_hours: state.workHours,
         work_hours_unit: state.workHoursUnit,
         constraints: state.constraints.map(function(c){
-            return { name: c.name, coef_a: c.coefA, coef_b: c.coefB, max_val: c.max, unit: c.unit };
+            return { name: c.name, coef_a: c.coefA, coef_b: c.coefB, max_val: c.max, unit: c.unit, direction: c.direction };
         })
     };
 
@@ -165,6 +176,7 @@ function saveProblem() {
 function loadProblem(problem) {
     state.currentProblemId = parseInt(problem.id);
     state.problemName = problem.name;
+    state.constraintType = problem.constraint_type || 'budget';
     state.budget = parseFloat(problem.budget) || 0;
     state.budgetPeriod = problem.budget_period || 'week';
     state.workHours = parseFloat(problem.work_hours) || 0;
@@ -186,6 +198,7 @@ function loadProblem(problem) {
     };
 
     document.getElementById('wiz-name').value = state.problemName;
+    document.getElementById('wiz-constraint-type').value = state.constraintType;
     document.getElementById('wiz-budget').value = state.budget;
     document.getElementById('wiz-period').value = state.budgetPeriod;
     document.getElementById('wiz-hours').value = state.workHours;
@@ -210,6 +223,7 @@ function loadProblem(problem) {
 function newProblem() {
     state.currentProblemId = null;
     state.problemName = 'Untitled Problem';
+    state.constraintType = 'budget';
     state.budget = 0;
     state.budgetPeriod = 'week';
     state.workHours = 0;
@@ -219,6 +233,7 @@ function newProblem() {
     state.lastResult = null;
 
     document.getElementById('wiz-name').value = 'Untitled Problem';
+    document.getElementById('wiz-constraint-type').value = 'budget';
     document.getElementById('wiz-budget').value = 0;
     document.getElementById('wiz-period').value = 'week';
     document.getElementById('wiz-hours').value = 0;
@@ -262,9 +277,12 @@ function setupEvents() {
 //  LP Solver — Vertex Enumeration
 // ====================================================
 function solveLP() {
-    var saleA = state.productA.sale;
-    var saleB = state.productB.sale;
+    var isRevenueMode = state.constraintType === 'revenue';
     var constraints = state.constraints;
+
+    // Objective coefficients: revenue mode minimizes cost, budget mode maximizes sales
+    var objA = isRevenueMode ? state.productA.cost : state.productA.sale;
+    var objB = isRevenueMode ? state.productB.cost : state.productB.sale; 
 
     var candidates = [{ x: 0, y: 0 }];
 
@@ -299,21 +317,34 @@ function solveLP() {
         if (p.x < -1e-7) { feasible = false; violated.push('X \u2265 0'); }
         if (p.y < -1e-7) { feasible = false; violated.push('Y \u2265 0'); }
         constraints.forEach(function(c){
-            if (c.coefA * p.x + c.coefB * p.y > c.max + 1e-5) {
-                feasible = false;
-                violated.push(c.name);
+            var lhs = c.coefA * p.x + c.coefB * p.y;
+            var direction = c.direction || '<=';
+            if (direction === '<=') {
+                if (lhs > c.max + 1e-5) {
+                    feasible = false;
+                    violated.push(c.name);
+                }
+            } else if (direction === '>=') {
+                if (lhs < c.max - 1e-5) {
+                    feasible = false;
+                    violated.push(c.name);
+                }
             }
         });
-        var value = feasible ? saleA * p.x + saleB * p.y : null;
+        var value = feasible ? objA * p.x + objB * p.y : null;
         return { x: Math.max(0, p.x), y: Math.max(0, p.y), feasible: feasible, value: value, violated: violated };
     });
 
-    var optimal = null, maxValue = -Infinity;
+    var optimal = null, bestValue = isRevenueMode ? Infinity : -Infinity;
     vertices.forEach(function(v){
-        if (v.feasible && v.value !== null && v.value > maxValue) { maxValue = v.value; optimal = v; }
+        if (!v.feasible || v.value === null) return;
+        if (isRevenueMode ? (v.value < bestValue) : (v.value > bestValue)) {
+            bestValue = v.value;
+            optimal = v;
+        }
     });
 
-    return { vertices: vertices, optimal: optimal, saleA: saleA, saleB: saleB };
+    return { vertices: vertices, optimal: optimal, objA: objA, objB: objB, isRevenueMode: isRevenueMode };
 }
 
 // ====================================================
@@ -324,19 +355,22 @@ function solveAndRender() {
     state.lastResult = result;
 
     // Formulation
+    var modeLabel = result.isRevenueMode ? 'Min C' : 'Max S';
     document.getElementById('math-objective').textContent =
-        'Max S = ' + Math.round(result.saleA) + 'X + ' + Math.round(result.saleB) + 'Y';
+        modeLabel + ' = ' + Math.round(result.objA) + 'X + ' + Math.round(result.objB) + 'Y';
 
     var mc = document.getElementById('math-constraints');
     mc.innerHTML = '';
     state.constraints.forEach(function(c){
         var d = document.createElement('div');
         d.className = 'equation';
-        d.textContent = c.coefA + 'X + ' + c.coefB + 'Y \u2264 ' + c.max + '  (' + c.name + ')';
+        var sign = (c.direction === '>=') ? '\u2265' : '\u2264';
+        d.textContent = c.coefA + 'X + ' + c.coefB + 'Y ' + sign + ' ' + c.max + '  (' + c.name + ')';
         mc.appendChild(d);
     });
 
     // Corner point table
+    document.getElementById('corner-value-header').textContent = result.isRevenueMode ? 'C = cost\u00d7X + cost\u00d7Y' : 'S = sale\u00d7X + sale\u00d7Y';
     var tbody = document.getElementById('corner-table-body');
     tbody.innerHTML = '';
     var opt = result.optimal;
@@ -349,9 +383,10 @@ function solveAndRender() {
         var statusHtml = v.feasible
             ? '<span style="color:#3ecfb2;font-weight:500;">Feasible</span>'
             : '<span style="color:#e05252;">Infeasible</span>';
-        var valText = v.feasible ? '$' + v.value.toFixed(2) : '\u2014';
+        var prefix = result.isRevenueMode ? 'Cost RM ' : 'Sales RM ';
+        var valText = v.feasible ? prefix + v.value.toFixed(2) : '\u2014';
         var analysis = '';
-        if (isOpt) analysis = '\u2605 Optimal \u2014 maximizes total sales';
+        if (isOpt) analysis = result.isRevenueMode ? '\u2605 Optimal \u2014 minimizes total cost' : '\u2605 Optimal \u2014 maximizes total sales';
         else if (!v.feasible) analysis = 'Violates: ' + v.violated.join(', ');
         else analysis = 'Feasible, lower sales value';
 
@@ -368,13 +403,21 @@ function solveAndRender() {
     if (opt && opt.value > 0) {
         var prodAName = state.productA.name.replace(/\(.*\)/, '').trim();
         var prodBName = state.productB.name.replace(/\(.*\)/, '').trim();
-        optDiv.innerHTML =
-            '<p class="opt-text">Make <strong class="opt-num">' + opt.x.toFixed(1) + '</strong> ' + esc(prodAName) +
-            ' and <strong class="opt-num">' + opt.y.toFixed(1) + '</strong> ' + esc(prodBName) + '</p>' +
-            '<p class="opt-text">Maximum Sales Revenue: <strong class="opt-num-gold">$' + opt.value.toFixed(2) +
-            '</strong> per ' + state.budgetPeriod + '</p>';
+        if (result.isRevenueMode) {
+            optDiv.innerHTML =
+                '<p class="opt-text">Make <strong class="opt-num">' + opt.x.toFixed(1) + '</strong> ' + esc(prodAName) +
+                ' and <strong class="opt-num">' + opt.y.toFixed(1) + '</strong> ' + esc(prodBName) + '</p>' +
+                '<p class="opt-text">Minimum Manufacturing Cost: <strong class="opt-num-gold">RM ' + opt.value.toFixed(2) +
+                '</strong> per ' + state.budgetPeriod + '</p>';
+        } else {
+            optDiv.innerHTML =
+                '<p class="opt-text">Make <strong class="opt-num">' + opt.x.toFixed(1) + '</strong> ' + esc(prodAName) +
+                ' and <strong class="opt-num">' + opt.y.toFixed(1) + '</strong> ' + esc(prodBName) + '</p>' +
+                '<p class="opt-text">Maximum Sales Revenue: <strong class="opt-num-gold">RM ' + opt.value.toFixed(2) +
+                '</strong> per ' + state.budgetPeriod + '</p>';
+        }
     } else {
-        optDiv.innerHTML = '<p class="opt-text" style="color:var(--red);">No feasible solution found. Adjust budget or hours.</p>';
+        optDiv.innerHTML = '<p class="opt-text" style="color:var(--red);">No feasible solution found. Adjust your values.</p>';
     }
 
     // Graph
@@ -456,7 +499,7 @@ function drawGraph(result) {
 
     var opt = result.optimal;
     if (opt && opt.value > 0) {
-        var sa = result.saleA, sb = result.saleB;
+        var sa = result.objA, sb = result.objB;
         var ip1, ip2;
         if (sa === 0 && sb > 0) { var yv2 = opt.value / sb; ip1 = { x: 0, y: yv2 }; ip2 = { x: maxX, y: yv2 }; }
         else if (sb === 0 && sa > 0) { var xv2 = opt.value / sa; ip1 = { x: xv2, y: 0 }; ip2 = { x: xv2, y: maxY }; }
@@ -477,7 +520,7 @@ function drawGraph(result) {
         });
         var showTip = function(){
             var html = '(' + v.x.toFixed(2) + ', ' + v.y.toFixed(2) + ')<br>';
-            html += v.feasible ? 'Sales: $' + v.value.toFixed(2) : 'Violates: ' + v.violated.join(', ');
+            html += v.feasible ? (result.isRevenueMode ? 'Cost: RM ' : 'Sales: RM ') + v.value.toFixed(2) : 'Violates: ' + v.violated.join(', ');
             if (isOpt) html += '<br>&starf; OPTIMAL';
             tooltip.innerHTML = html;
             tooltip.style.left = (parseFloat(circle.getAttribute('cx')) + 12) + 'px';

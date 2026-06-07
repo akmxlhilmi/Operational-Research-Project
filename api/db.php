@@ -5,6 +5,26 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'optimizer_db');
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+function getCurrentUserId() {
+    return $_SESSION['user_id'] ?? null;
+}
+
+function requireAuth() {
+    if (!isLoggedIn()) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
+    }
+}
+
 // Convert all PHP errors to exceptions so they're caught by try/catch
 set_error_handler(function($severity, $message, $file, $line) {
     if (!(error_reporting() & $severity)) return false;

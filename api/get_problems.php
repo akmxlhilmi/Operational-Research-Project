@@ -1,18 +1,23 @@
 <?php
 require_once 'db.php';
+requireAuth();
 
 $db = getDB();
+$userId = getCurrentUserId();
 
 $sql = "SELECT p.*,
         (SELECT COUNT(*) FROM results r WHERE r.problem_id = p.id) AS result_count
-        FROM problems p ORDER BY p.created_at DESC";
+        FROM problems p WHERE p.user_id = ? ORDER BY p.created_at DESC";
 
-$result = @$db->query($sql);
-if (!$result) {
+$stmt = $db->prepare($sql);
+if (!$stmt) {
     http_response_code(200);
     echo json_encode([]);
     exit;
 }
+$stmt->bind_param('i', $userId);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $problems = [];
 while ($row = $result->fetch_assoc()) {

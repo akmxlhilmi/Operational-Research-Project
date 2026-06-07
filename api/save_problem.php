@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+requireAuth();
 
 try {
 
@@ -18,6 +19,7 @@ if (!$data) {
 }
 
 $db = getDB();
+$userId = getCurrentUserId();
 
 $id            = (!empty($data['id'])) ? (int)$data['id'] : null;
 $name          = trim($data['name'] ?? 'Untitled Problem');
@@ -32,6 +34,7 @@ $prodBCost     = (float)($data['prod_b_cost'] ?? 0);
 $prodBTime     = (float)($data['prod_b_time'] ?? 0);
 $prodBTimeUnit = trim($data['prod_b_time_unit'] ?? 'hrs');
 $budget        = (float)($data['budget'] ?? 0);
+$constraintType = trim($data['constraint_type'] ?? 'budget');
 $budgetPeriod  = trim($data['budget_period'] ?? 'week');
 $workHours     = (float)($data['work_hours'] ?? 0);
 $workHoursUnit = trim($data['work_hours_unit'] ?? 'hrs');
@@ -46,18 +49,28 @@ if ($name === '') {
 $db->begin_transaction();
 
 if ($id) {
+    $stmt = $db->prepare("SELECT id FROM problems WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $id, $userId);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows === 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Problem not found']);
+        exit;
+    }
+    $stmt->close();
+
     $stmt = $db->prepare(
             "UPDATE problems SET name=?, prod_a_name=?, prod_a_sale=?, prod_a_cost=?, prod_a_time=?, prod_a_time_unit=?,
              prod_b_name=?, prod_b_sale=?, prod_b_cost=?, prod_b_time=?, prod_b_time_unit=?,
-             budget=?, budget_period=?, work_hours=?, work_hours_unit=? WHERE id=?"
+             budget=?, constraint_type=?, budget_period=?, work_hours=?, work_hours_unit=? WHERE id=?"
     );
     if (!$stmt) throw new Exception('Prepare UPDATE: ' . $db->error);
 
     $stmt->bind_param(
-        "ssdddssdddsdsdsi",
+        "ssdddssdddsdssdsi",
         $name, $prodAName, $prodASale, $prodACost, $prodATime, $prodATimeUnit,
         $prodBName, $prodBSale, $prodBCost, $prodBTime, $prodBTimeUnit,
-        $budget, $budgetPeriod, $workHours, $workHoursUnit, $id
+        $budget, $constraintType, $budgetPeriod, $workHours, $workHoursUnit, $id
     );
     $stmt->execute();
     $stmt->close();
@@ -69,18 +82,18 @@ if ($id) {
     $delStmt->close();
 } else {
     $stmt = $db->prepare(
-            "INSERT INTO problems (name, prod_a_name, prod_a_sale, prod_a_cost, prod_a_time, prod_a_time_unit,
+            "INSERT INTO problems (user_id, name, prod_a_name, prod_a_sale, prod_a_cost, prod_a_time, prod_a_time_unit,
              prod_b_name, prod_b_sale, prod_b_cost, prod_b_time, prod_b_time_unit,
-             budget, budget_period, work_hours, work_hours_unit)
-             VALUES (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?,  ?, ?, ?, ?)"
+             budget, constraint_type, budget_period, work_hours, work_hours_unit)
+             VALUES (?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?)"
     );
     if (!$stmt) throw new Exception('Prepare INSERT: ' . $db->error);
 
     $stmt->bind_param(
-        "ssdddssdddsdsds",
-        $name, $prodAName, $prodASale, $prodACost, $prodATime, $prodATimeUnit,
+        "issdddssdddsdssds",
+        $userId, $name, $prodAName, $prodASale, $prodACost, $prodATime, $prodATimeUnit,
         $prodBName, $prodBSale, $prodBCost, $prodBTime, $prodBTimeUnit,
-        $budget, $budgetPeriod, $workHours, $workHoursUnit
+        $budget, $constraintType, $budgetPeriod, $workHours, $workHoursUnit
     );
     $stmt->execute();
     $id = $db->insert_id;
@@ -92,14 +105,14 @@ if (count($constraints) > 0) {
     if (!$cstmt) throw new Exception('Prepare INSERT constraints: ' . $db->error);
 
     foreach ($constraints as $c) {
-        $cName  = trim($c['name'] ?? 'Constraint');
-        $coefA  = (float)($c['coef_a'] ?? 0);
-        $coefB  = (float)($c['coef_b'] ?? 0);
-        $maxVal = (float)($c['max_val'] ?? 0);
-        $unit   = trim($c['unit'] ?? 'units');
-        $cstmt->bind_param("isddds", $id, $cName, $coefA, $coefB, $maxVal, $unit);
-        $cstmt->execute();
-    }
+            $cName      = trim($c['name'] ?? 'Constraint');
+            $coefA      = (float)($c['coef_a'] ?? 0);
+            $coefB      = (float)($c['coef_b'] ?? 0);
+            $maxVal     = (float)($c['max_val'] ?? 0);
+            $unit       = trim($c['unit'] ?? 'units');
+            $cstmt->bind_param("isddds", $id, $cName, $coefA, $coefB, $maxVal, $unit);
+            $cstmt->execute();
+        }
     $cstmt->close();
 }
 

@@ -1,3 +1,10 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$loggedIn = isset($_SESSION['user_id']);
+$username = $_SESSION['username'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,8 +26,17 @@
                 <span class="brand-name">Production Optimizer</span>
             </a>
             <ul class="nav-links">
-                <li><a href="optimizer.php">Optimizer</a></li>
-                <li><a href="saved.php">Saved Problems</a></li>
+                <?php if ($loggedIn): ?>
+                    <li><a href="optimizer.php">Optimizer</a></li>
+                    <li><a href="saved.php">Saved Problems</a></li>
+                    <li><span class="nav-user"><?php echo htmlspecialchars($username); ?></span></li>
+                    <li><a href="api/logout.php" class="nav-logout">Logout</a></li>
+                <?php else: ?>
+                    <li><a href="optimizer.php">Optimizer</a></li>
+                    <li><a href="saved.php">Saved Problems</a></li>
+                    <li><a href="login.php">Sign In</a></li>
+                    <li><a href="register.php">Register</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>
@@ -37,7 +53,7 @@
                 </h1>
                 <p class="home-text">
                     A practical linear programming tool for operations teams.
-                    Define products, set resource constraints and instantly
+                    Define products, set resource constraints, and instantly
                     calculate optimal quantities to maximize profit.
                 </p>
                 <div class="home-actions">

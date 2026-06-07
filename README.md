@@ -1,6 +1,7 @@
 # Operational Research
 ### Production Optimizer for Small Factory
 ---
+
 ## Team members
 
 | Name | matric Number |
@@ -48,23 +49,22 @@ http://localhost/Operational-Research-Project/setup.php
 ---
 
 ## Project Structure
-
 ```
-Operational-Research-Project/
-├── index.php           # Product homepage (landing page)
-├── optimizer.php       # LP optimizer tool
-├── saved.php           # Saved problems browser
-├── style.css           # Unified stylesheet
-├── optimizer.js        # LP solver + DOM + API client
-├── api/
-│   ├── db.php          # MySQLi connection + CORS headers
-│   ├── setup.sql       # Database schema + seed data
+├── api
+│   ├── db.php
+│   ├── delete_problem.php
 │   ├── get_problems.php
 │   ├── save_problem.php
 │   ├── save_result.php
-│   └── delete_problem.php
+│   └── setup.sql
+├── index.php
+├── optimizer.js
+├── optimizer.php
+├── README.md
+├── saved.php
+├── setup.php
+└── style.css
 ```
-
 ---
 
 

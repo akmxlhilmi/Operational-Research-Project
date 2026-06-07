@@ -1,3 +1,13 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+$username = $_SESSION['username'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,6 +31,8 @@
             <ul class="nav-links">
                 <li><a href="index.php">Home</a></li>
                 <li><a href="optimizer.php">Optimizer</a></li>
+                <li><span class="nav-user"><?php echo htmlspecialchars($username); ?></span></li>
+                <li><a href="api/logout.php" class="nav-logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -80,9 +92,9 @@
                         '<span class="saved-date">' + new Date(p.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) + '</span>' +
                         '</div>' +
                         '<div class="saved-card-details">' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_a_name || 'Product 1') + '</span><span class="saved-detail-value">Sale $' + aSale.toFixed(2) + ' &middot; Cost $' + aCost.toFixed(2) + ' &middot; ' + aTime + ' ' + aUnit + '</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_b_name || 'Product 2') + '</span><span class="saved-detail-value">Sale $' + bSale.toFixed(2) + ' &middot; Cost $' + bCost.toFixed(2) + ' &middot; ' + bTime + ' ' + bUnit + '</span></div>' +
-                        '<div class="saved-detail"><span class="saved-detail-label">Budget</span><span class="saved-detail-value">$' + budget.toFixed(2) + ' &middot; ' + hours + ' hrs per ' + period + '</span></div>' +
+                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_a_name || 'Product 1') + '</span><span class="saved-detail-value">Sale RM ' + aSale.toFixed(2) + ' &middot; Cost RM ' + aCost.toFixed(2) + ' &middot; ' + aTime + ' ' + aUnit + '</span></div>' +
+                        '<div class="saved-detail"><span class="saved-detail-label">' + esc(p.prod_b_name || 'Product 2') + '</span><span class="saved-detail-value">Sale RM ' + bSale.toFixed(2) + ' &middot; Cost RM ' + bCost.toFixed(2) + ' &middot; ' + bTime + ' ' + bUnit + '</span></div>' +
+                        '<div class="saved-detail"><span class="saved-detail-label">Budget</span><span class="saved-detail-value">RM ' + budget.toFixed(2) + ' &middot; ' + hours + ' hrs per ' + period + '</span></div>' +
                         '<div class="saved-detail"><span class="saved-detail-label">Results saved</span><span class="saved-detail-value">' + rCount + '</span></div>' +
                         '</div>' +
                         '<div class="saved-card-actions">' +
