@@ -431,7 +431,7 @@ body:has(.saved-page) { overflow-y: auto; height: auto; }
 .wiz-field { display: flex; flex-direction: column; gap: 5px; }
 .wiz-field-wide { grid-column: 1 / -1; }
 .wiz-label {
-    font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-2);
+    font-family: var(--font-mono); font-size: 0.62rem; color:#c1c4c7;
     letter-spacing: 0.06em; text-transform: uppercase;
 }
 .wiz-input {
