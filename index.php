@@ -22,7 +22,6 @@ $username = $_SESSION['username'] ?? '';
     <header class="site-header">
         <nav class="navbar">
             <a class="brand" href="index.php">
-                <span class="brand-mark">OR</span>
                 <span class="brand-name">Production Optimizer</span>
             </a>
             <ul class="nav-links">
