@@ -74,7 +74,7 @@ function deriveConstraints() {
             coefA: state.productA.cost,
             coefB: state.productB.cost,
             max: state.budget,
-            unit: '$'
+            unit: 'RM'
         },
         {
             name: 'Work Hours (' + state.budgetPeriod + ')',
