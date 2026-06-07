@@ -39,7 +39,7 @@
             </div>
             <div class="wiz-row wiz-row-3">
                 <div class="wiz-field">
-                    <label class="wiz-label">Manufacturing Budget ($)</label>
+                    <label class="wiz-label">Manufacturing Budget (RM)</label>
                     <input type="number" id="wiz-budget" class="wiz-input" value="315" step="any" min="0">
                 </div>
                 <div class="wiz-field">
@@ -76,11 +76,11 @@
                     <input type="text" id="prod-a-name" class="wiz-input wiz-prod-name" value="Table (X)" placeholder="Product name">
                     <div class="wiz-prod-fields">
                         <div class="wiz-field">
-                            <label class="wiz-label">Sale Price ($)</label>
+                            <label class="wiz-label">Sale Price (RM)</label>
                             <input type="number" id="prod-a-sale" class="wiz-input" value="90" step="any" min="0">
                         </div>
                         <div class="wiz-field">
-                            <label class="wiz-label">Cost to Make ($)</label>
+                            <label class="wiz-label">Cost to Make (RM)</label>
                             <input type="number" id="prod-a-cost" class="wiz-input" value="15" step="any" min="0">
                         </div>
                         <div class="wiz-field">
@@ -105,11 +105,11 @@
                     <input type="text" id="prod-b-name" class="wiz-input wiz-prod-name" value="Chair (Y)" placeholder="Product name">
                     <div class="wiz-prod-fields">
                         <div class="wiz-field">
-                            <label class="wiz-label">Sale Price ($)</label>
+                            <label class="wiz-label">Sale Price (RM)</label>
                             <input type="number" id="prod-b-sale" class="wiz-input" value="180" step="any" min="0">
                         </div>
                         <div class="wiz-field">
-                            <label class="wiz-label">Cost to Make ($)</label>
+                            <label class="wiz-label">Cost to Make (RM)</label>
                             <input type="number" id="prod-b-cost" class="wiz-input" value="45" step="any" min="0">
                         </div>
                         <div class="wiz-field">

@@ -37,7 +37,7 @@
                 </h1>
                 <p class="home-text">
                     A practical linear programming tool for operations teams.
-                    Define products, set resource constraints, and instantly
+                    Define products, set resource constraints and instantly
                     calculate optimal quantities to maximize profit.
                 </p>
                 <div class="home-actions">
