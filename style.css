@@ -626,7 +626,7 @@ body.page-auth { overflow-y: auto; height: auto; }
 .auth-form { display: flex; flex-direction: column; gap: 18px; }
 .auth-field { display: flex; flex-direction: column; gap: 5px; }
 .auth-label {
-    font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-3);
+    font-family: var(--font-mono); font-size: 0.62rem; color: #dde1e2;;
     letter-spacing: 0.06em; text-transform: uppercase;
 }
 .auth-input {
