@@ -48,23 +48,30 @@ http://localhost/Operational-Research-Project/setup.php
 
 ---
 
-## Project Structure
+# Project Structure
+
 ```
 ├── api
 │   ├── db.php
 │   ├── delete_problem.php
 │   ├── get_problems.php
+│   ├── login.php
+│   ├── logout.php
+│   ├── register.php
 │   ├── save_problem.php
 │   ├── save_result.php
 │   └── setup.sql
 ├── index.php
+├── login.php
 ├── optimizer.js
 ├── optimizer.php
 ├── README.md
+├── register.php
 ├── saved.php
 ├── setup.php
 └── style.css
 ```
+
 ---
 
 
