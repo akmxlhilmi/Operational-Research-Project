@@ -6,10 +6,10 @@
 
 | Name | matric Number |
 |:------|:-----:|
-| Mia Aishah Solehah binti Mashuri | 2240199 |
-| Muhammad Akmal bin Mohd Hilmi | 2240204 |
-| Nur Umira Dini Binti Hishammudin | 2240220  |
-| Nur Farah Hanim binti Nor Azmi | 2240226 |
+| Mia Aishah Solehah | 2240199 |
+| Muhammad Akmal | 2240204 |
+| Nur Umira Dini | 2240220  |
+| Nur Farah Hanim | 2240226 |
 
 ---
 
